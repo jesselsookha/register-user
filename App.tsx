@@ -10,6 +10,7 @@ import {
 
 // structure for the user object 
 type Registration = {
+  id: string;
   firstName: string;
   surname: string;
   email: string;
@@ -44,6 +45,7 @@ export default function App() {
 
     // Create new registration object
     const newUser: Registration = {
+      id: Date.now().toString(),
       firstName: firstName.trim(),
       surname: surname.trim(),
       email: email.trim(),
@@ -112,6 +114,7 @@ export default function App() {
 
       <FlatList 
         data={registeredUsers}
+        keyExtractor={(item) => item.id}
         renderItem={({item}) => <Text>{item.firstName}</Text>}
       />
     </View>
