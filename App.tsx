@@ -24,7 +24,7 @@ export default function App() {
   const [age, setAge] = useState<string>('');
 
   // array of objects ("registered users") 
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [registeredUsers, setRegisteredUsers] = useState<Registration[]>([]);
 
   const handleSave = () => {
     // Initial Validation
@@ -42,7 +42,7 @@ export default function App() {
     // More validation of data needs to be performed
 
     // Create new registration object
-    const newRegistration: Registration = {
+    const newUser: Registration = {
       firstName: firstName.trim(),
       surname: surname.trim(),
       email: email.trim(),
@@ -51,9 +51,9 @@ export default function App() {
     };
 
     // Add object to array
-    setRegistrations([...registrations, newRegistration]);
+    setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
 
-    console.log('Registration saved:', newRegistration);
+    console.log('Registration saved:', registeredUsers);
 
   };
 
