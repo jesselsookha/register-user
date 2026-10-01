@@ -1,5 +1,6 @@
 import { useState } from 'react'; 
 import { 
+  FlatList,
   StyleSheet, 
   Text, 
   TextInput, 
@@ -53,7 +54,7 @@ export default function App() {
     // Add object to array
     setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
 
-    console.log('Registration saved:', registeredUsers);
+    //console.log('Registration saved:', registeredUsers);
 
   };
 
@@ -108,6 +109,11 @@ export default function App() {
       <TouchableHighlight onPress={handleSave}>
         <Text>Submit</Text>
       </TouchableHighlight>
+
+      <FlatList 
+        data={registeredUsers}
+        renderItem={({item}) => <Text>{item.firstName}</Text>}
+      />
     </View>
   );
 }
