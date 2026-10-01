@@ -17,9 +17,10 @@ type UserProps = {
   em: string; 
   pn: string; 
   ag: string;
+  onDelete: () => void;
 };
 
-function UserCard({fn, sn, em, pn, ag} : UserProps) {
+function UserCard({fn, sn, em, pn, ag, onDelete} : UserProps) {
   return(
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -32,6 +33,12 @@ function UserCard({fn, sn, em, pn, ag} : UserProps) {
         <Text style={styles.cardLabel}>Phone</Text>
         <Text style={styles.cardText}>{pn}</Text>
       </View>
+      <TouchableHighlight
+        style={styles.deleteButton}
+        onPress={onDelete}
+      >
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </TouchableHighlight>
     </View>
   );
 }
@@ -39,7 +46,7 @@ function UserCard({fn, sn, em, pn, ag} : UserProps) {
 
 // structure for the user object 
 type Registration = {
-  id: string;
+  id: string; 
   firstName: string;
   surname: string;
   email: string;
@@ -57,6 +64,8 @@ export default function App() {
   // array of objects ("registered users") 
   const [registeredUsers, setRegisteredUsers] = useState<Registration[]>([]);
 
+  const [errMsg, setErrMsg] = useState<string>('');
+
   const handleSave = () => {
     // Initial Validation
     if (
@@ -66,7 +75,7 @@ export default function App() {
       phoneNumber.trim() === '' ||
       age.trim() === ''
     ) {
-      console.log('Please complete all fields');
+      setErrMsg('Please complete all fields');
       return;
     }
 
@@ -85,8 +94,18 @@ export default function App() {
     // Add object to array
     setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
 
-    //console.log('Registration saved:', registeredUsers);
+    // Clear the form 
+    setFirstName('');
+    setSurname('');
+    setEmail('');
+    setPhoneNumber('');
+    setAge('');
+  };
 
+  const handleDelete = (id: string) => {
+    setRegisteredUsers(prevUsers =>
+      prevUsers.filter((user) => user.id !== id)
+    );
   };
 
   return (
@@ -137,9 +156,11 @@ export default function App() {
         inputMode='numeric'
       />
 
-      <TouchableHighlight onPress={handleSave}>
-        <Text>Submit</Text>
+      <TouchableHighlight style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>Submit</Text>
       </TouchableHighlight>
+
+      <Text style={styles.errMessage}>{errMsg}</Text>
 
       <FlatList 
         data={registeredUsers}
@@ -151,6 +172,7 @@ export default function App() {
             em={item.email}
             pn={item.phoneNumber}
             ag={item.age}
+            onDelete={() => handleDelete(item.id)}
           />
         }
       />
@@ -240,5 +262,18 @@ const styles = StyleSheet.create({
     fontSize: 13, 
     color: '#333', 
     marginBottom: 3, 
+  },
+  deleteButton: {
+    height: 35,
+    marginTop: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#D32F2F',
+  },
+  deleteButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
 });
