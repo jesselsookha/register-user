@@ -7,6 +7,15 @@ import {
   View 
 } from 'react-native';
 
+// structure for the user object 
+type Registration = {
+  firstName: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  age: string;
+};
+
 export default function App() {
   const [firstName, setFirstName] = useState<string>(''); 
   const [surname, setSurname] = useState<string>(''); 
@@ -14,7 +23,37 @@ export default function App() {
   const [phoneNumber, setPhoneNumber] = useState<string>(''); 
   const [age, setAge] = useState<string>('');
 
+  // array of objects ("registered users") 
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+
   const handleSave = () => {
+    // Initial Validation
+    if (
+      firstName.trim() === '' ||
+      surname.trim() === '' ||
+      email.trim() === '' ||
+      phoneNumber.trim() === '' ||
+      age.trim() === ''
+    ) {
+      console.log('Please complete all fields');
+      return;
+    }
+
+    // More validation of data needs to be performed
+
+    // Create new registration object
+    const newRegistration: Registration = {
+      firstName: firstName.trim(),
+      surname: surname.trim(),
+      email: email.trim(),
+      phoneNumber: phoneNumber.trim(),
+      age: age.trim(),
+    };
+
+    // Add object to array
+    setRegistrations([...registrations, newRegistration]);
+
+    console.log('Registration saved:', newRegistration);
 
   };
 
