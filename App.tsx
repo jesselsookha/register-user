@@ -34,12 +34,18 @@ function UserCard({fn, sn, em, pn, ag, onDelete, onEdit} : UserProps) {
         <Text style={styles.cardLabel}>Phone</Text>
         <Text style={styles.cardText}>{pn}</Text>
       </View>
-      <View>
-        <TouchableHighlight style={styles.deleteButton} onPress={onDelete}>
-          <Text style={styles.deleteButtonText}>Delete</Text>
+      <View style={styles.cardActions}>
+        <TouchableHighlight 
+          style={styles.editButton} 
+          onPress={onEdit}
+        >
+          <Text style={styles.editButtonText}>Edit</Text>
         </TouchableHighlight>
-        <TouchableHighlight onPress={onEdit}>
-          <Text>Edit</Text>
+        <TouchableHighlight 
+          style={styles.deleteButton} 
+          onPress={onDelete}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableHighlight>
       </View>
     </View>
@@ -70,9 +76,18 @@ export default function App() {
   const [errMsg, setErrMsg] = useState<string>('');
 
   // This state tells us whether we are editing an existing user.
-  // null  = we are adding a new user
+  // null      = we are adding a new user
   // "value"   = we are editing the user whose id is "value"
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+
+  // Small helper so the same form-reset logic is not duplicated
+  const clearForm = () => {
+    setFirstName('');
+    setSurname('');
+    setEmail('');
+    setPhoneNumber('');
+    setAge('');
+  };
 
   const handleSave = () => {
     // Initial Validation
@@ -89,24 +104,30 @@ export default function App() {
 
     // More validation of data needs to be performed
 
+    // Clear any previous error now that the data is valid
+    setErrMsg('');
+
     if (editingUserId !== null) {
-      const updatedUsers = registeredUsers.map((user) =>
-        user.id === editingUserId ? 
-        {
-          ...user,
-          firstName: firstName.trim(),
-          surname: surname.trim(),
-          email: email.trim(),
-          phoneNumber: phoneNumber.trim(),
-          age: age.trim(),
-        }
-        : user
+      // Edit mode: replace the matching user with an updated object
+      setRegisteredUsers(prevUsers =>
+        prevUsers.map((user) =>
+          user.id === editingUserId
+            ? {
+                ...user,
+                firstName: firstName.trim(),
+                surname: surname.trim(),
+                email: email.trim(),
+                phoneNumber: phoneNumber.trim(),
+                age: age.trim(),
+              }
+            : user
+        )
       );
 
-      setRegisteredUsers(updatedUsers);
       setEditingUserId(null);
+      clearForm();
     } else {
-      // Create new registration object
+      // Add mode: create a new user object and append it
       const newUser: Registration = {
         id: Date.now().toString(),
         firstName: firstName.trim(),
@@ -115,15 +136,9 @@ export default function App() {
         phoneNumber: phoneNumber.trim(),
         age: age.trim(),
       };
-      // Add object to array
-      setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
 
-      // Clear the form 
-      setFirstName('');
-      setSurname('');
-      setEmail('');
-      setPhoneNumber('');
-      setAge('');
+      setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
+      clearForm();
     }
   };
 
@@ -143,9 +158,16 @@ export default function App() {
     setEditingUserId(user.id);
   };
 
+  const handleCancel = () => {
+    setEditingUserId(null);
+    clearForm();
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Registration</Text>
+      <Text style={styles.title}>
+        {editingUserId !== null ? 'Edit Registration' : 'Registration'}
+      </Text>
       <TextInput 
         value={firstName}
         onChangeText={setFirstName}
@@ -192,7 +214,9 @@ export default function App() {
       />
 
       <TouchableHighlight style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Submit</Text>
+        <Text style={styles.buttonText}>
+          {editingUserId !== null ? 'Update' : 'Submit'}
+        </Text>
       </TouchableHighlight>
 
       <Text style={styles.errMessage}>{errMsg}</Text>
@@ -200,16 +224,9 @@ export default function App() {
       {editingUserId !== null && (
         <TouchableHighlight 
           style={styles.button} 
-          onPress={() => {
-            setEditingUserId(null);
-            setFirstName('');
-            setSurname('');
-            setEmail('');
-            setPhoneNumber('');
-            setAge('');
-          }}>
-        <Text style={styles.buttonText}>Cancel</Text>
-      </TouchableHighlight>
+          onPress={handleCancel}>
+          <Text style={styles.buttonText}>Cancel</Text>
+        </TouchableHighlight>
       )}
 
       <Text style={styles.title}>Users</Text>
@@ -217,7 +234,7 @@ export default function App() {
       <FlatList 
         data={registeredUsers}
         keyExtractor={(item) => item.id}
-        renderItem={({item, index} : {item : Registration, index: any}) => 
+        renderItem={({item} : {item : Registration}) => 
           <UserCard
             fn={item.firstName}
             sn={item.surname}
@@ -316,9 +333,29 @@ const styles = StyleSheet.create({
     color: '#333', 
     marginBottom: 3, 
   },
-  deleteButton: {
-    height: 35,
+  cardActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 8,
+  },
+  editButton: {
+    flex: 1,
+    height: 35,
+    marginRight: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#1976D2',
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  deleteButton: {
+    flex: 1,
+    height: 35,
+    marginLeft: 4,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
