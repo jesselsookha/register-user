@@ -18,9 +18,10 @@ type UserProps = {
   pn: string; 
   ag: string;
   onDelete: () => void;
+  onEdit: () => void;
 };
 
-function UserCard({fn, sn, em, pn, ag, onDelete} : UserProps) {
+function UserCard({fn, sn, em, pn, ag, onDelete, onEdit} : UserProps) {
   return(
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -33,12 +34,14 @@ function UserCard({fn, sn, em, pn, ag, onDelete} : UserProps) {
         <Text style={styles.cardLabel}>Phone</Text>
         <Text style={styles.cardText}>{pn}</Text>
       </View>
-      <TouchableHighlight
-        style={styles.deleteButton}
-        onPress={onDelete}
-      >
-        <Text style={styles.deleteButtonText}>Delete</Text>
-      </TouchableHighlight>
+      <View>
+        <TouchableHighlight style={styles.deleteButton} onPress={onDelete}>
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableHighlight>
+        <TouchableHighlight onPress={onEdit}>
+          <Text>Edit</Text>
+        </TouchableHighlight>
+      </View>
     </View>
   );
 }
@@ -66,6 +69,11 @@ export default function App() {
 
   const [errMsg, setErrMsg] = useState<string>('');
 
+  // This state tells us whether we are editing an existing user.
+  // null  = we are adding a new user
+  // "value"   = we are editing the user whose id is "value"
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+
   const handleSave = () => {
     // Initial Validation
     if (
@@ -81,31 +89,58 @@ export default function App() {
 
     // More validation of data needs to be performed
 
-    // Create new registration object
-    const newUser: Registration = {
-      id: Date.now().toString(),
-      firstName: firstName.trim(),
-      surname: surname.trim(),
-      email: email.trim(),
-      phoneNumber: phoneNumber.trim(),
-      age: age.trim(),
-    };
+    if (editingUserId !== null) {
+      const updatedUsers = registeredUsers.map((user) =>
+        user.id === editingUserId ? 
+        {
+          ...user,
+          firstName: firstName.trim(),
+          surname: surname.trim(),
+          email: email.trim(),
+          phoneNumber: phoneNumber.trim(),
+          age: age.trim(),
+        }
+        : user
+      );
 
-    // Add object to array
-    setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
+      setRegisteredUsers(updatedUsers);
+      setEditingUserId(null);
+    } else {
+      // Create new registration object
+      const newUser: Registration = {
+        id: Date.now().toString(),
+        firstName: firstName.trim(),
+        surname: surname.trim(),
+        email: email.trim(),
+        phoneNumber: phoneNumber.trim(),
+        age: age.trim(),
+      };
+      // Add object to array
+      setRegisteredUsers(prevUsers => [...prevUsers, newUser]);
 
-    // Clear the form 
-    setFirstName('');
-    setSurname('');
-    setEmail('');
-    setPhoneNumber('');
-    setAge('');
+      // Clear the form 
+      setFirstName('');
+      setSurname('');
+      setEmail('');
+      setPhoneNumber('');
+      setAge('');
+    }
   };
 
   const handleDelete = (id: string) => {
     setRegisteredUsers(prevUsers =>
       prevUsers.filter((user) => user.id !== id)
     );
+  };
+
+  const handleEdit = (user : Registration) => {
+    setFirstName(user.firstName); 
+    setSurname(user.surname); 
+    setEmail(user.email); 
+    setPhoneNumber(user.phoneNumber); 
+    setAge(user.age); 
+    
+    setEditingUserId(user.id);
   };
 
   return (
@@ -162,10 +197,27 @@ export default function App() {
 
       <Text style={styles.errMessage}>{errMsg}</Text>
 
+      {editingUserId !== null && (
+        <TouchableHighlight 
+          style={styles.button} 
+          onPress={() => {
+            setEditingUserId(null);
+            setFirstName('');
+            setSurname('');
+            setEmail('');
+            setPhoneNumber('');
+            setAge('');
+          }}>
+        <Text style={styles.buttonText}>Cancel</Text>
+      </TouchableHighlight>
+      )}
+
+      <Text style={styles.title}>Users</Text>
+
       <FlatList 
         data={registeredUsers}
         keyExtractor={(item) => item.id}
-        renderItem={({item} : {item : Registration}) => 
+        renderItem={({item, index} : {item : Registration, index: any}) => 
           <UserCard
             fn={item.firstName}
             sn={item.surname}
@@ -173,6 +225,7 @@ export default function App() {
             pn={item.phoneNumber}
             ag={item.age}
             onDelete={() => handleDelete(item.id)}
+            onEdit={() => handleEdit(item)}
           />
         }
       />
